@@ -24,7 +24,7 @@ class RoomState {
 }
 
 class _BodyState extends State<Body> {
-  List<RoomState> rooms = List.empty();
+  late Future<List<Room>> futureRooms;
   @override
   Widget build(BuildContext context) {
     Size size = MediaQuery.of(context).size;
@@ -124,57 +124,73 @@ class _BodyState extends State<Body> {
                   ],
                 ),
               ),
+              TextButton(
+                child: Text("Reload"),
+                onPressed: () => {
+                  this.setState(() {
+                    initData();
+                  })
+                },
+              ),
               Spacer(),
             ],
           ),
         ),
-        // Align(
-        //   child: ListView.separated(
-        //     padding: const EdgeInsets.all(kDefaultPadding),
-        //     itemCount: rooms.length,
-        //     itemBuilder: (BuildContext context, int index) {
-        //       return Card(
-        //         child: Row(children: [
-        //           ListTile(
-        //             leading: Icon(Icons.access_time),
-        //             title: Text(rooms[index].description),
-        //           )
-        //         ]),
-        //       );
-        //     },
-        //     separatorBuilder: (BuildContext context, int index) =>
-        //         const Divider(),
-        //   ),
-        // )
+        FutureBuilder(
+          future: futureRooms,
+          builder: (context, snapshot) {
+            if (snapshot.hasData) {
+              return Flexible(
+                child: ListView.separated(
+                  itemCount: (snapshot.data as List<Room>).length,
+                  separatorBuilder: (BuildContext context, int index) =>
+                      const Divider(),
+                  itemBuilder: (BuildContext context, int index) {
+                    return Padding(
+                      padding: const EdgeInsets.only(
+                          left: kDefaultPadding, top: kDefaultPadding),
+                      child: Column(
+                        children: [
+                          Row(
+                            children: [
+                              Text('Room Number:' +
+                                  ((snapshot.data as List<Room>)
+                                      .elementAt(index)
+                                      .roomNumber!)),
+                            ],
+                          ),
+                          Row(
+                            children: [
+                              Text('Description:' +
+                                  ((snapshot.data as List<Room>)
+                                      .elementAt(index)
+                                      .description!)),
+                            ],
+                          )
+                        ],
+                      ),
+                    );
+                  },
+                ),
+              );
+            }
+            return const CircularProgressIndicator();
+          },
+        )
       ],
     );
   }
 
   @override
   void initState() {
+    initData();
+
+    super.initState();
+  }
+
+  void initData() {
     final dio = Dio();
     final client = RestClient(dio);
-    client.getTasks().then((value) => {
-          setState(() {
-            value.forEach((element) {
-              var newRoom = new RoomState();
-              if (element.description != null) {
-                newRoom.description = element.description.toString();
-              }
-              if (element.id != null) {
-                newRoom.id = element.id.toString();
-              }
-              var price = element.price;
-              if (price != null) {
-                newRoom.price = price.toDouble();
-              }
-              var list = element.images;
-              if (list != null) {
-                newRoom.images = list;
-              }
-            });
-          })
-        });
-    super.initState();
+    futureRooms = client.getTasks();
   }
 }

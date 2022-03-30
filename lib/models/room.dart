@@ -18,12 +18,11 @@ class Room {
   String? roomNumber;
   List<String>? images;
   String? description;
-  double? price;
+  int? price;
   factory Room.fromJson(Map<String, dynamic> json) {
     return Room(
         id: json['id'],
         roomNumber: json['roomNumber'],
-        images: json['images'],
         description: json['description'],
         price: json['price']);
   }

@@ -10,7 +10,7 @@ part of 'room.dart';
 
 class _RestClient implements RestClient {
   _RestClient(this._dio, {this.baseUrl}) {
-    baseUrl ??= 'http://localhost:5001/api';
+    baseUrl ??= 'http://10.0.2.2:5001/api';
   }
 
   final Dio _dio;
